@@ -1,0 +1,40 @@
+version: '3'
+services:
+  elastic:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.1.2
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    restart: always
+    environment:
+      - xpack.security.enabled=false
+      - node.name=node-1
+      - cluster.initial_master_nodes=node-1
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 4G
+
+  grafana:
+    image: grafana/grafana-oss
+    ports:
+      - 5000:3000
+    environment:
+      - GF_INSTALL_PLUGINS=grafana-clock-panel,grafana-simple-json-datasource
+    depends_on:
+      - elastic
+    deploy:
+      resources:
+        limits:
+          cpus: "0.5"
+          memory: 2G
+    restart: always
+
+  app:
+    build: .
+    ports:
+      - "8081:8080"
+  
